@@ -7,7 +7,6 @@ import {
   StyleProp,
   ViewStyle,
   Animated,
-  PanResponder,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import Video, { OnLoadData, OnProgressData } from 'react-native-video';
@@ -52,7 +51,7 @@ export default function VideoPlayer({
 
   const _handlePause = () => {
     setPaused(!pause);
-    player.current.presentFullscreenPlayer()
+    // player.current.presentFullscreenPlayer()
   };
   const _handleProgress = (progress: OnProgressData) => {
     setCurrentTime(progress.currentTime);
@@ -67,49 +66,6 @@ export default function VideoPlayer({
     // console.log('duration',progress.duration)
   };
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        pan.setOffset({
-          x: pan.x._value,
-          y: pan.y._value,
-        });
-      },
-      onPanResponderMove: (e, gestureState) => {
-        Animated.timing(pan, {
-          toValue:
-            gestureState.dx <= contentContainerStyle?.width
-              ? {x: gestureState.dx, y: 0}
-              : {x: contentContainerStyle?.width, y: 0},
-          duration: 2,
-          useNativeDriver: true,
-        }).start();
-        setValue(
-          gestureState.dx <= contentContainerStyle?.width
-            ? gestureState.dx
-            : contentContainerStyle?.width,
-        );
-      },
-      onPanResponderEnd: (e, gestureState) => {
-        pan.x.setValue(
-          gestureState.dx <= contentContainerStyle?.width
-            ? gestureState.dx
-            : contentContainerStyle?.width,
-        );
-      },
-      onPanResponderRelease: () => {
-        pan.flattenOffset();
-      },
-    }),
-  ).current;
-  console.log('pan', value);
-  console.log('duration', duration);
-  console.log(
-      'current time',
-    (value / contentContainerStyle?.width) * duration,
-  );
-
   return (
     <View style={[styles.playerContainer, contentContainerStyle]}>
       <Video
@@ -123,8 +79,8 @@ export default function VideoPlayer({
         // repeat
         // muted
         volume={10}
-        controls={true}
-        // controls={useDefaultControls}
+        // controls={true}
+        controls={useDefaultControls}
         resizeMode={'contain'}
         ignoreSilentSwitch={'obey'}
         // allowsExternalPlayback
@@ -137,17 +93,6 @@ export default function VideoPlayer({
 
       {useDefaultControls ? null : (
         <View style={styles.controlsContainer}>
-          <View style={styles.track}>
-            <Animated.View
-              style={{
-                borderWidth: 1,
-                width: 10,
-                transform: [{translateX: pan.x}, {translateY: pan.y}],
-              }}
-              {...panResponder.panHandlers}>
-              <View style={styles.box} />
-            </Animated.View>
-          </View>
           <View style={[styles.controlButtonsContainer]}>
             <TouchableOpacity
               style={styles.playPauseButton}
