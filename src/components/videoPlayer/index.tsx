@@ -8,7 +8,7 @@ import {
   ViewStyle,
   Animated,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import Video, { OnLoadData, OnProgressData } from 'react-native-video';
 import localImages from './utils/localImages';
 
@@ -31,15 +31,14 @@ interface PlayerProps {
 export default function VideoPlayer({
   useDefaultControls = false,
   source,
-  contentContainerStyle = {width: 390},
+  contentContainerStyle = {width: '100%',},
   seekTime = 5,
   duration,
 }: PlayerProps) {
   const [pause, setPaused] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const player = useRef<any>(null);
-  const pan = useRef<any>(new Animated.ValueXY()).current;
-  const [value, setValue] = useState(0);
+  const [mute, setMute] = useState(false);
 
   const rotate180 = {
     transform: [
@@ -53,6 +52,10 @@ export default function VideoPlayer({
     setPaused(!pause);
     // player.current.presentFullscreenPlayer()
   };
+  const _handleMute = useCallback(() => {
+    setMute(!mute)
+    // player.current.presentFullscreenPlayer()
+  },[mute])
   const _handleProgress = (progress: OnProgressData) => {
     setCurrentTime(progress.currentTime);
   };
@@ -72,13 +75,12 @@ export default function VideoPlayer({
         ref={player}
         source={source}
         style={styles.videoComp}
-        fullscreen={false}
+        fullscreen
         fullscreenOrientation='landscape'
         fullscreenAutorotate
         paused={pause}
-        // repeat
-        // muted
-        volume={10}
+        repeat
+        muted={mute}
         // controls={true}
         controls={useDefaultControls}
         resizeMode={'contain'}
@@ -117,6 +119,15 @@ export default function VideoPlayer({
               <Image
                 source={localImages.FORWARD}
                 style={[styles.playPauseIcon]}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={1}
+              style={styles.playPauseButton}
+              onPress={_handleMute}>
+              <Image
+                source={mute ? localImages.MUTE : localImages.UNMUTE}
+                style={styles.playPauseIcon}
               />
             </TouchableOpacity>
           </View>
